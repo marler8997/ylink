@@ -42,33 +42,30 @@ class ObjectFiles
     public bool emptyNames() { return queue.empty(); }
     public string popName() { return queue.pop(); }
     public void putName(string name)
-	{
+    {
         string keyName = baseName(name).toLower();
         ObjectFilename* existing = keyName in keyNameObjectMap;
 
         if(existing !is null)
         {
             //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			// Uncomment this once the verbosity pull request is merged
-			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // Uncomment this once the verbosity pull request is merged
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             //if(verbosity > 0)
             //{
             //    writefln("verbose: ObjectFile '%s' already exists (keyName='%s')", name, keyName);
             //}
 
             // TODO: should I check if the paths are different?
-
         }
-		else
-		{
-
+        else
+        {
             keyNameObjectMap[keyName] = ObjectFilename(name, keyName);
             queue.append(name);
-
         }
     }
     public void putObjectFile(ObjectFile objectFile)
-	{
+    {
         objectFiles.put(objectFile);
     }
 }
