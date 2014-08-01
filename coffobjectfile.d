@@ -243,12 +243,12 @@ public:
             i += sym.NumberOfAuxSymbols;
         }
     }
-    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, WorkQueue!string queue, WorkQueue!ObjectFile objects)
+    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, ObjectFiles objectFiles)
     {
         debug(COFFDATA) writeln("COFF Object file: ", f.filename);
 
         symtab = new SymbolTable(xsymtab);
-        objects.append(this);
+        objectFiles.putObjectFile(this);
 
         loadStuffFromFile();
 
@@ -260,7 +260,7 @@ public:
                 symtab.add(sym);
 
         foreach(d; directives)
-            d.apply(queue);
+            d.apply(objectFiles);
 
         symtab.checkUnresolved();
         symtab.merge();
@@ -486,12 +486,12 @@ public:
     {
         assert(0);
     }
-    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, WorkQueue!string queue, WorkQueue!ObjectFile objects)
+    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, ObjectFiles objectFiles)
     {
         debug(COFFDATA) writeln("COFF Import file: ", f.filename);
 
         symtab = new SymbolTable(xsymtab);
-        objects.append(this);
+        objectFiles.putObjectFile(this);
         f.seek(0);
 
         auto ch = f.read!CoffHeader();

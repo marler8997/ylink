@@ -10,6 +10,7 @@ import std.string;
 import linker;
 import paths;
 import driver;
+import objectfile;
 import pe;
 import sectiontable;
 import symboltable;
@@ -130,9 +131,10 @@ void main(string[] args)
 
     auto sectab = new SectionTable();
     auto symtab = new SymbolTable(null);
-    auto objects = loadObjects(objFilenames, paths, symtab, sectab);
+    ObjectFiles objectFiles = new ObjectFiles(objFilenames);
+    loadObjects(objectFiles, paths, symtab, sectab);
     finalizeLoad(symtab, sectab);
-    auto segments = generateSegments(objects, symtab, sectab);
+    auto segments = generateSegments(objectFiles, symtab, sectab);
 
     if (dump)
     {

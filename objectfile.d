@@ -1,4 +1,10 @@
 
+import std.array;
+import std.path;
+import std.string;
+import std.stdio;
+
+import linker;
 import datafile;
 import modules;
 import omflibraryfile;
@@ -8,6 +14,64 @@ import coffobjectfile;
 import sectiontable;
 import symboltable;
 import workqueue;
+
+struct ObjectFilename
+{
+    public string filename;
+    public string keyName;
+    public this(string filename, string keyName)
+	{
+        this.filename = filename;
+        this.keyName = keyName;
+    }
+}
+class ObjectFiles
+{
+    ObjectFilename[string] keyNameObjectMap;
+    auto queue = new WorkQueue!string();
+
+    auto objectFiles = appender!(ObjectFile[])();
+
+    this(string[] objectFilenames)
+	{
+        foreach(string filename; objectFilenames) {
+            putName(filename);
+        }
+    }
+
+    public bool emptyNames() { return queue.empty(); }
+    public string popName() { return queue.pop(); }
+    public void putName(string name)
+	{
+        string keyName = baseName(name).toLower();
+        ObjectFilename* existing = keyName in keyNameObjectMap;
+
+        if(existing !is null)
+        {
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+			// Uncomment this once the verbosity pull request is merged
+			//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //if(verbosity > 0)
+            //{
+            //    writefln("verbose: ObjectFile '%s' already exists (keyName='%s')", name, keyName);
+            //}
+
+            // TODO: should I check if the paths are different?
+
+        }
+		else
+		{
+
+            keyNameObjectMap[keyName] = ObjectFilename(name, keyName);
+            queue.append(name);
+
+        }
+    }
+    public void putObjectFile(ObjectFile objectFile)
+	{
+        objectFiles.put(objectFile);
+    }
+}
 
 abstract class ObjectFile : Module
 {
@@ -35,6 +99,6 @@ abstract class ObjectFile : Module
         }
     }
     abstract void dump();
-    abstract void loadSymbols(SymbolTable symtab, SectionTable segtab, WorkQueue!string queue, WorkQueue!ObjectFile objects);
+    abstract void loadSymbols(SymbolTable symtab, SectionTable segtab, ObjectFiles objectFiles);
     abstract void loadData(uint tlsBase);
 }

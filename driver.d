@@ -1,5 +1,6 @@
 
 import std.exception;
+import std.string;
 import std.stdio;
 
 import relocation;
@@ -12,26 +13,27 @@ import linker;
 import paths;
 import datafile;
 
-WorkQueue!ObjectFile loadObjects(string[] objFilenames, Paths paths, SymbolTable symtab, SectionTable sectab)
+void loadObjects(ObjectFiles objectFiles, Paths paths, SymbolTable symtab, SectionTable sectab)
 {
-    auto queue = new WorkQueue!string();
-    foreach(filename; objFilenames)
-        queue.append(filename);
-
-    auto objects = new WorkQueue!ObjectFile();
-    while (!queue.empty())
+    while (!objectFiles.emptyNames())
     {
-        auto filename = queue.pop();
+        string filename = objectFiles.popName();
+
         if (!paths.search(filename))
             writeln("Warning - File not found: " ~ filename);
         else
         {
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            // Uncomment this once the verbosity pull request is merged
+            //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //if (verbosity > 0)
+            //    debug writefln("verbose: Loading '%s'", filename);
+
             auto object = ObjectFile.detectFormat(new DataFile(filename));
             enforce(object, "Unknown object file format: " ~ filename);
-            object.loadSymbols(symtab, sectab, queue, objects);
+            object.loadSymbols(symtab, sectab, objectFiles);
         }
     }
-    return objects;
 }
 
 void finalizeLoad(SymbolTable symtab, SectionTable sectab)
@@ -42,14 +44,13 @@ void finalizeLoad(SymbolTable symtab, SectionTable sectab)
     symtab.checkUnresolved();
 }
 
-Segment[SegmentType] generateSegments(WorkQueue!ObjectFile objects, SymbolTable symtab, SectionTable sectab)
+Segment[SegmentType] generateSegments(ObjectFiles objectFiles, SymbolTable symtab, SectionTable sectab)
 {
     auto segments = sectab.allocateSegments(imageBase, segAlign, fileAlign);
     symtab.buildImports(segments[SegmentType.Import].data, imageBase);
 
-    while (!objects.empty())
+    foreach (ObjectFile object; objectFiles.objectFiles.data)
     {
-        auto object = objects.pop();
         object.loadData((SegmentType.TLS in segments) ? segments[SegmentType.TLS].base : -1);
     }
     return segments;

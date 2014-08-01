@@ -44,12 +44,12 @@ public:
             r.dump();
         }
     }
-    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, WorkQueue!string queue, WorkQueue!ObjectFile objects)
+    override void loadSymbols(SymbolTable xsymtab, SectionTable sectab, ObjectFiles objectFiles)
     {
         debug(OMFDATA) writeln("OMF Object file: ", f.filename);
 
         symtab = new SymbolTable(xsymtab);
-        objects.append(this);
+        objectFiles.putObjectFile(this);
         f.seek(0);
         enforce(f.peekByte() == 0x80, "First record must be THEADR");
         auto modend = false;
@@ -90,7 +90,7 @@ public:
                     // DOSSEG
                     break;
                 case 0x9F:
-                    queue.append(defaultExtension(cast(string)data, "lib"));
+                    objectFiles.putName(defaultExtension(cast(string)data, "lib"));
                     break;
                 case 0xA0:
                     auto subtype = getByte(data);

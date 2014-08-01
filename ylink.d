@@ -58,12 +58,17 @@ void main(string[] args)
             break;
         }
     }
+	
+    //
+    // Add object filenames
+    //
+    ObjectFiles objectFiles = new ObjectFiles(objectFilenames);
 
     auto sectab = new SectionTable();
     auto symtab = new SymbolTable(null);
-    auto objects = loadObjects(objectFilenames, paths, symtab, sectab);
+    loadObjects(objectFiles, paths, symtab, sectab);
     finalizeLoad(symtab, sectab);
-    auto segments = generateSegments(objects, symtab, sectab);
+    auto segments = generateSegments(objectFiles, symtab, sectab);
 
     if (dump)
     {

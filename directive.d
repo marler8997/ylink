@@ -2,13 +2,14 @@
 import std.path;
 
 import workqueue;
+import objectfile;
 
 class Directive
 {
     this()
     {
     }
-    void apply(WorkQueue!string queue)
+    void apply(ObjectFiles objectFiles)
     {
         assert(0);
     }
@@ -21,9 +22,9 @@ class LibDirective : Directive
     {
         this.name = name;
     }
-    override void apply(WorkQueue!string queue)
+    override void apply(ObjectFiles objectFiles)
     {
-        queue.append(defaultExtension(cast(string)name, "lib"));
+        objectFiles.putName(defaultExtension(cast(string)name, "lib"));
     }
 }
 
@@ -34,7 +35,7 @@ class NoLibDirective : Directive
     {
         this.name = name;
     }
-    override void apply(WorkQueue!string queue)
+    override void apply(ObjectFiles objectFiles)
     {
     }
 }

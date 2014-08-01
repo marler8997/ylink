@@ -29,7 +29,7 @@ public:
         writeln("OMF Library file: ", f.filename);
         f.seek(0);
     }
-    override void loadSymbols(SymbolTable symtab, SectionTable sectab, WorkQueue!string queue, WorkQueue!ObjectFile objects)
+    override void loadSymbols(SymbolTable symtab, SectionTable sectab, ObjectFiles objectFiles)
     {
         //writeln("OMF Library file: ", f.filename);
         //symtab.dumpUndefined();
@@ -93,7 +93,7 @@ public:
                     auto obj = ObjectFile.detectFormat(new DataFile(f, page * pagesize));
                     assert(obj);
                     //writeln("Pulling in object ", page, " due to undefined symbol: ", cast(string)sym.name);
-                    obj.loadSymbols(symtab, sectab, queue, objects);
+                    obj.loadSymbols(symtab, sectab, objectFiles);
                     progress = true;
                     break;
                 }
